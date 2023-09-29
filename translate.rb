@@ -35,15 +35,9 @@ class Translator
     updateGrammar(grammar_file)
   end
 
-  # part 1
-
   def updateLexicon(inputfile)
     file = File.new(inputfile)
     file_text = file.read
-    # example file_text:
-    #     blue, ADJ, French:bleu, German:blau, Spanish:azul, Swedish:Bla
-    #     truck, NOU, Spanish:camion, German:LKW
-    #     the, DET, German:det, Spanish:el, French:le
 
     file.close
     validated_array = file_text.scan(/^([a-z-]+, [A-Z]{3}(, [A-Z][a-z0-9]*:[a-z-]+)+)$/)
@@ -56,16 +50,8 @@ class Translator
 
     validated_array.flatten!
 
-    # example validated_array:
-    #     ["the, DET, German:det, Spanish:el, French:le"]
-    # in this case there is only one valid line
-
     for line in validated_array
       split_line = line.split(', ')
-      # example split_line:
-      #     ["the", "DET", "German:det", "Spanish:el", "French:le"]
-      # each word is a different element in the array, notice the quotes compared to validated_array 
-      # (split_line[0] = "the", split_line[1] = "DET", split_line[2] = "German:det", etc...)
 
       pos = split_line[1]
       english_word = Word.new(pos, 'English', split_line[0])
@@ -76,8 +62,6 @@ class Translator
 
       for word in split_line.drop(2)
         split_word = word.split(':')
-        # example split_word:
-        #     ["German", "det"]
 
         translated_word = Word.new(pos, split_word[0], split_word[1])
         comparison_word = Word.new(pos, split_word[0], "?")
@@ -90,11 +74,6 @@ class Translator
   def updateGrammar(inputfile)
     file = File.new(inputfile)
     file_text = file.read
-    # example file_text:
-    #     English: DET, ADJ{3}, NOU
-    #     Spanish: DET, NOU, ADJ
-    #     French: DET, NOU
-    #     German: Det, ADJ, ADJ, NOU, ADJ
 
     file.close
     validated_array = file_text.scan(/^([A-Z][a-z0-9]*: ([A-Z]{3}({[0-9]+})?(, )?)+)$/)
@@ -108,17 +87,9 @@ class Translator
     end
 
     validated_array.flatten!
-    # example validated_array:
-    #     ["English: DET, ADJ{3}, NOU",
-    #     "Spanish: DET, NOU, ADJ",
-    #     "French: DET, NOU",
-    #     "German: Det, ADJ, ADJ, NOU, ADJ"]
 
     for line in validated_array
       split_line = line.split(': ')
-      # example split_line:
-      #     ["English", "DET, ADJ{3}, NOU"]
-      # this splits the language into split_line[0] and the rest into split_line[1]
 
       language = split_line[0]
 
@@ -140,8 +111,6 @@ class Translator
       @lexicon.grammar.store(language, pos_arr)
     end
   end
-
-  # part 2
 
   def generateSentence(language, struct)
     ret = ""
@@ -216,7 +185,6 @@ class Translator
     ret.chop
   end
 
-  # part 3
   def changeLanguage(sentence, language1, language2)
     ret = ""
     
@@ -264,54 +232,6 @@ class Translator
     end
     ret.chop
   end
-
-=begin
-  def changeLanguage(sentence, language1, language2)
-    ret = ""
-
-    split_sentence = sentence.split
-    for i in 0..split_sentence.length - 1
-      comparison_word = Word.new("?", language1, split_sentence[i])
-      english_word = @lexicon.translations.select{ |k, v| v.include?(comparison_word) }
-      if english_word.empty? && language1 != "English"
-        return nil
-      end
-      if language1 == "English"
-        english_word = @lexicon.translations.keys.select{ |word| word == comparison_word }
-        if english_word.empty?
-          puts "nil1"
-          return nil
-        end
-
-        english_word = english_word[0]
-      else
-        english_word = english_word.keys[0]
-      end
-      if english_word.nil?
-        puts "nil2"
-        return nil
-      end
-
-      comparison_word = Word.new(english_word.pos, language2, "?")
-      translated_word = @lexicon.translations[english_word].flatten.select{ |word| word == comparison_word }
-      if language2 == "English"
-        translated_word = @lexicon.translations.keys.select{ |word| word == comparison_word }
-        if translated_word.empty?
-          return nil
-        end
-      end
-      if translated_word.empty?
-        puts "nil3"
-        return nil
-      else
-        translated_word = translated_word[0]
-      end
-
-      ret += translated_word.word + " "
-    end
-    ret.chop
-  end
-=end
 
   def translate(sentence, language1, language2)
     fix_grammar = changeGrammar(sentence, language1, language2)
